@@ -159,8 +159,6 @@ class Field:
 			#  valid neighbor.
 			if (not intersects):
 				neighbors.append(point)
-
-		print(f'Neighbors of {node}: {neighbors}')
 		return neighbors
 
 
@@ -246,22 +244,22 @@ class Field:
 		while not frontier.empty():
 			current = frontier.get()
 
-		if current == self.end:
-			self.backtrack(came_from, current)
-			return cost_so_far[str(current)]
-		
-		for child in self.get_neighbors(current):
-			new_cost = cost_so_far[str(current)] + self.straight_line_distance(current, child)
+			if current == self.end:
+				self.backtrack(came_from, current)
+				return cost_so_far[str(current)]
+			
+			for child in self.get_neighbors(current):
+				new_cost = cost_so_far[str(current)] + self.straight_line_distance(current, child)
 
-			# if this is the  first time we encounter this neighbor, or we found a cheaper path
-			if str(child) not in cost_so_far.keys() or new_cost < cost_so_far[str(child)]:
-				cost_so_far[str(child)] = new_cost
-				# self.straight_line_distance is the heuristic
-				priority = new_cost + self.straight_line_distance(child, self.end)
-				frontier.put(child, priority)
-				came_from[str(child)] = current
+				# if this is the  first time we encounter this neighbor, or we found a cheaper path
+				if str(child) not in cost_so_far.keys() or new_cost < cost_so_far[str(child)]:
+					cost_so_far[str(child)] = new_cost
+					# self.straight_line_distance is the heuristic
+					priority = new_cost + self.straight_line_distance(child, self.end)
+					frontier.put(child, priority)
+					came_from[str(child)] = current
 		
-		return -1
+		return cost_so_far[str(node)]
 
 def main():
 	f = Field(700, 400, "Search Space")
@@ -362,8 +360,8 @@ def main():
 	f.reset()   # Reset the Field
 
 	# TODO: Create the Start and End points of your choice
-	#f.add_start(Point(x, y))
-	#f.add_end(Point(x, y))
+	f.add_start(Point(120, 640))
+	f.add_end(Point(120, 575))
 
 	path_cost = f.astar_search()
 

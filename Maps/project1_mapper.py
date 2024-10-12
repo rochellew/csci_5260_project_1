@@ -14,6 +14,34 @@ class Node:
 		self.parent = None
 		self.cost = 0
 
+# ===============================================================================
+# Class: PriorityQueue
+#  Purpose: A simplified PriorityQueue
+#  Author: Dr. Brian Bennett
+class PriorityQueue:
+    def __init__(self):
+        self.queue = []
+
+    def set_priority(self, item, priority):
+        for node in self.queue:
+            if node[0] == item:
+                self.queue.remove(node)
+                break
+        self.put(item, priority)
+
+    def put(self, item, priority):
+        node = [item, priority]
+        self.queue.append(node)
+        self.queue.sort(key=itemgetter(1))
+
+    def get(self):
+        if len(self.queue) == 0:
+            return None
+        return self.queue.pop(0)
+        
+    def empty(self):
+        return len(self.queue) == 0
+
 class Map:
 	'''
 		Constructor - reads Mapfile
@@ -201,6 +229,40 @@ class Map:
 					frontier.append(node_to_add)
 
 		return self.backtrack(explored, node)  # Return the path from the current node to the start node
+
+	"""
+	Testing Uniform Cost Search with a PriorityQueue data structure.
+	The runtime seems to be off on the search algorithms, but this didn't fix that.
+	"""
+	def uniform_cost_search_priority_queue(self):
+		node = [self.start,[],0]
+		frontier = PriorityQueue()
+		frontier.put(node, 0) # root node
+		explored = []
+
+		while True:
+			if len(frontier.queue) == 0:
+				return -1
+			
+			current = frontier.get()
+			location, parent, cost = current[0]
+
+			self.search[location[0]][location[1]] = '.'
+			explored.append(current[0])
+
+			for neighbor in self.get_neighbors(location):
+				
+				frontier_locations = [n[0] for n in frontier.queue]
+				explored_locations = [n[0] for n in explored]
+
+				if neighbor not in frontier_locations and neighbor not in explored_locations:
+					if neighbor == self.goal:
+						return self.backtrack(explored, current[0])
+					node_to_add = [neighbor, location, cost + 1]
+					frontier.put(node_to_add, cost + 1)
+
+		return self.backtrack(explored,node)	# Return the path from the current node to the start node
+
 
 	'''
 	Uniform-Cost Search:
