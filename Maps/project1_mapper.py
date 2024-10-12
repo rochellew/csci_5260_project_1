@@ -7,6 +7,12 @@ from collections import deque
 from operator import itemgetter
 import numpy as np
 
+class Node:
+	def __init__(self, x, y, parent, cost):
+		self.x = 0
+		self.y = 0
+		self.parent = None
+		self.cost = 0
 
 class Map:
 	'''
@@ -110,17 +116,17 @@ class Map:
 		path_cost = 0
 		location = node[0]
 		parent = node[1]
-		step_cost = node[2]
-		path_cost = path_cost + step_cost
+		# step_cost = node[2]
+		# path_cost = path_cost + step_cost
 
 		while (location != self.start):
-
 			self.search[location[0]][location[1]] = 'O'
 			newnode = [x for x in explored if x[0] == parent][0]
 			location = newnode[0]
 			parent = newnode[1]
-			step_cost = newnode[2]
-			path_cost = path_cost + step_cost
+			# step_cost = newnode[2]
+			#path_cost = path_cost + step_cost
+			path_cost += 1
 		self.search[location[0]][location[1]] = 'O'
 		return path_cost+1
 
@@ -135,23 +141,21 @@ class Map:
 		explored = []				# Create the closed (visited) list.
 
 		while True:
-			# if the frontier is empty, return -1
 			if len(frontier) == 0:
 				return -1 # no path was able to be found
 
-			# get the current node (queue = FIFO)
 			current = frontier.pop()
-			# node format is [[row,col],[row,col],step cost]
-			location,  parent, cost = current
+			location, parent, cost = current
 
-			# mark the node as explored and add to explored list
+			# mark the node as explored (".") and add to explored list
 			self.search[location[0]][location[1]] = '.'
 			explored.append(current)
 
-			# for every [row,col] neighbor to the current location
+			# for every neighbor (row,col) relative to the current location
 			for neighbor in self.get_neighbors(location):
-				# if the [row,col] is not in the node's first item for every node in the frontier OR explored nodes
-				if neighbor not in [n[0] for n in frontier] and neighbor not in [n[0] for n in explored]:
+				frontier_locations = [n[0] for n in frontier]
+				explored_locations = [n[0] for n in explored]
+				if neighbor not in frontier_locations and neighbor not in explored_locations:
 					# if the neighbor would be the goal
 					if neighbor == self.goal:
 						# return the backtrack, passing in the goal node's location, parent, and cost
@@ -186,11 +190,15 @@ class Map:
 			explored.append(current)
 
 			for neighbor in self.get_neighbors(location):
-				if neighbor not in [n[0] for n in frontier] and neighbor not in [n[0] for n in explored]:
+
+				frontier_locations = [n[0] for n in frontier]
+				explored_locations = [n[0] for n in explored]
+
+				if neighbor not in frontier_locations and neighbor not in explored_locations:
 					if neighbor == self.goal:
 						return self.backtrack(explored, current)
-					
-					frontier.append([neighbor, location, cost + 1])
+					node_to_add = [neighbor, location, cost + 1]
+					frontier.append(node_to_add)
 
 		return self.backtrack(explored, node)  # Return the path from the current node to the start node
 
@@ -198,8 +206,6 @@ class Map:
 	Uniform-Cost Search:
 		This method implements a uniform-cost search algorithm.
 	'''
-	
-
 	def uniform_cost_search(self):
 		node = [self.start,[],0]			# The initial node has the [row,col] coordinate followed by its parent node and its step-cost
 		frontier = []
@@ -218,15 +224,14 @@ class Map:
 			explored.append(current)
 
 			for neighbor in self.get_neighbors(location):
-				step_cost = cost + 1
 				if neighbor == self.goal:
 					return self.backtrack(explored, current)
+
 				if 	all(not np.array_equal(neighbor,n[0]) for _,n in frontier) \
 				and all(not np.array_equal(neighbor,n[0]) for n in explored):
-					heapq.heappush(frontier, (step_cost, [neighbor,location,step_cost]))
+					node_to_add = [neighbor, location, cost + 1]
+					heapq.heappush(frontier, (cost + 1, node_to_add))
 		return self.backtrack(explored,node)	# Return the path from the current node to the start node
-
-
 
 '''
 main method

@@ -160,6 +160,7 @@ class Field:
 			if (not intersects):
 				neighbors.append(point)
 
+		print(f'Neighbors of {node}: {neighbors}')
 		return neighbors
 
 
@@ -216,9 +217,13 @@ class Field:
 		'''
 			Returns the straight-line distance between point 1 and point 2
 		'''
-	# TODO: Calculate Straight-Line Distance
-		return 0.
+		# Calculate Straight-Line Distance: sqrt(((x2 - x1)^2)+((y2-y1)^2))
+		x1 = point1.getX()
+		x2 = point2.getX()
+		y1 = point1.getY()
+		y2 = point2.getY()
 
+		return math.sqrt((x2-x1)**2 + (y2-y1)**2)
 
 	def astar_search(self):
 		'''
@@ -238,10 +243,25 @@ class Field:
 		cost_so_far[str(node)] = 0
 
 	# TODO: Continue A* Algorithm Here
+		while not frontier.empty():
+			current = frontier.get()
 
-		return cost_so_far[str(node)]
+		if current == self.end:
+			self.backtrack(came_from, current)
+			return cost_so_far[str(current)]
+		
+		for child in self.get_neighbors(current):
+			new_cost = cost_so_far[str(current)] + self.straight_line_distance(current, child)
 
-
+			# if this is the  first time we encounter this neighbor, or we found a cheaper path
+			if str(child) not in cost_so_far.keys() or new_cost < cost_so_far[str(child)]:
+				cost_so_far[str(child)] = new_cost
+				# self.straight_line_distance is the heuristic
+				priority = new_cost + self.straight_line_distance(child, self.end)
+				frontier.put(child, priority)
+				came_from[str(child)] = current
+		
+		return -1
 
 def main():
 	f = Field(700, 400, "Search Space")
